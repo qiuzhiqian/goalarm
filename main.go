@@ -15,7 +15,7 @@ type Config struct {
 	Second []int
 }
 
-func NextTime(c *Config) (time.Time, error) {
+func NextTime(c Config) (time.Time, error) {
 	now := time.Now()
 
 	year := now.Year()
@@ -24,6 +24,38 @@ func NextTime(c *Config) (time.Time, error) {
 	hour := now.Hour()
 	minute := now.Minute()
 	second := now.Second()
+
+	if len(c.Year) == 0 {
+		c.Year = append(c.Year, year)
+	}
+
+	if len(c.Month) == 0 {
+		c.Month = append(c.Month, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12)
+	}
+
+	if len(c.Day) == 0 {
+		for i := 0; i < 31; i++ {
+			c.Day = append(c.Day, i+1)
+		}
+	}
+
+	if len(c.Hour) == 0 {
+		for i := 0; i < 24; i++ {
+			c.Hour = append(c.Hour, i)
+		}
+	}
+
+	if len(c.Minute) == 0 {
+		for i := 0; i < 60; i++ {
+			c.Minute = append(c.Minute, i)
+		}
+	}
+
+	if len(c.Second) == 0 {
+		for i := 0; i < 60; i++ {
+			c.Second = append(c.Second, i)
+		}
+	}
 
 	yearTag := c.Year[0]
 	monthTag := c.Month[0]
@@ -113,25 +145,12 @@ func NextTime(c *Config) (time.Time, error) {
 						secondTag = c.Second[0]
 					}
 					minuteTag = c.Minute[0]
-					secondTag = c.Second[0]
 				}
-
 				hourTag = c.Hour[0]
-				minuteTag = c.Minute[0]
-				secondTag = c.Second[0]
 			}
-
 			dayTag = c.Day[0]
-			hourTag = c.Hour[0]
-			minuteTag = c.Minute[0]
-			secondTag = c.Second[0]
 		}
-
 		monthTag = c.Month[0]
-		dayTag = c.Day[0]
-		hourTag = c.Hour[0]
-		minuteTag = c.Minute[0]
-		secondTag = c.Second[0]
 	}
 
 	return now, fmt.Errorf("xxxx")
@@ -196,7 +215,7 @@ func TestNextTime() {
 		Minute: []int{10, 13, 20, 33, 46, 56},
 		Second: []int{23, 33, 45, 57},
 	}
-	t, err := NextTime(&c)
+	t, err := NextTime(c)
 	if err != nil {
 		log.Println("find err:", err)
 	}
@@ -207,17 +226,17 @@ func main() {
 	log.Println("vim-go")
 
 	c := Config{
-		Year:   []int{2020, 2021, 2022},
-		Month:  []int{2, 5, 7, 8, 11},
-		Day:    []int{1, 2, 3, 15, 20, 28},
-		Hour:   []int{10, 13, 16, 18, 21, 23},
-		Minute: []int{10, 13, 17, 20, 28, 33, 37, 42, 46, 51, 56},
+		Year:  []int{2020, 2021, 2022},
+		Month: []int{2, 5, 7, 8, 11},
+		Day:   []int{1, 2, 3, 15, 20, 28},
+		Hour:  []int{10, 13, 16, 18, 21, 23},
+		/*Minute: []int{10, 13, 17, 20, 28, 33, 37, 42, 46, 51, 56},*/
 		Second: []int{23, 33, 45, 57},
 	}
 
 	quilt := make(chan bool, 1)
 	for {
-		t, err := NextTime(&c)
+		t, err := NextTime(c)
 		if err != nil {
 			log.Println("find err:", err)
 			return
