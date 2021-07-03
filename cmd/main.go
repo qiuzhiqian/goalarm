@@ -9,7 +9,7 @@ import (
 
 type Manager struct {
 	Monitor *goalarm.Monitor
-	/*action  *Action*/
+	Actions []Action
 }
 
 func (m *Manager) Start() {
@@ -20,6 +20,14 @@ func (m *Manager) Start() {
 
 	for t := range event {
 		log.Println("done ", t)
+
+		//do all action
+		for _, action := range m.Actions {
+			err := action.DoAction()
+			if err != nil {
+				return
+			}
+		}
 	}
 
 	m.Monitor.Done()
@@ -42,6 +50,31 @@ func main() {
 	m := Manager{
 		Monitor: &monitor,
 	}
+
+	type Text struct {
+		Content string `json:"context"`
+	}
+
+	type TextMessage struct {
+		Msgtype string `json:"msgtype"`
+		Text    Text   `json:"text"`
+	}
+
+	message := TextMessage{
+		Msgtype: "text",
+		Text: Text{
+			Content: "hello world",
+		},
+	}
+
+	action := RebotAction{
+		webHook: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx",
+		data:    message,
+	}
+	actions := make([]Action, 0)
+	actions = append(actions, &action)
+
+	m.Actions = actions
 
 	m.Start()
 }
