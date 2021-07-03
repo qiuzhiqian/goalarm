@@ -1,4 +1,4 @@
-package main
+package goalarm
 
 import (
 	"fmt"
@@ -9,6 +9,11 @@ import (
 type Monitor struct {
 	config Config
 	events []chan time.Time
+	quilt  chan bool
+}
+
+func (m *Monitor) SetConfig(c *Config) {
+	m.config = *c
 }
 
 func (m *Monitor) AddEvent(event chan time.Time) {
@@ -16,7 +21,7 @@ func (m *Monitor) AddEvent(event chan time.Time) {
 }
 
 func (m *Monitor) Start() {
-	quilt := make(chan bool, 1)
+	m.quilt = make(chan bool, 1)
 	for {
 		t, err := NextTime(m.config)
 		if err != nil {
@@ -34,27 +39,15 @@ func (m *Monitor) Start() {
 			for _, e := range m.events {
 				e <- now
 			}
-		case <-quilt:
+		case <-m.quilt:
 			log.Println("quilt")
 			return
 		}
 	}
 }
 
-type Manager struct {
-	monitor *Monitor
-	/*action  *Action*/
-}
-
-func (m *Manager) Start() {
-	event := make(chan time.Time, 100)
-	m.monitor.AddEvent(event)
-
-	go m.monitor.Start()
-
-	for t := range event {
-		log.Println("done ", t)
-	}
+func (m *Monitor) Done() {
+	m.quilt <- true
 }
 
 type Config struct {
@@ -205,25 +198,4 @@ func NextTime(c Config) (time.Time, error) {
 	}
 
 	return now, fmt.Errorf("xxxx")
-}
-
-func main() {
-	log.Println("go-alarm")
-
-	monitor := Monitor{
-		config: Config{
-			Year:  []int{2020, 2021, 2022},
-			Month: []int{2, 5, 7, 8, 11},
-			Day:   []int{1, 2, 3, 15, 20, 28},
-			Hour:  []int{10, 13, 17, 18, 21, 23},
-			/*Minute: []int{10, 13, 17, 20, 28, 33, 37, 42, 46, 51, 56},*/
-			Second: []int{23, 33, 45, 57},
-		},
-	}
-
-	m := Manager{
-		monitor: &monitor,
-	}
-
-	m.Start()
 }
