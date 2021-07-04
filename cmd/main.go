@@ -41,8 +41,8 @@ func main() {
 	monitor.SetConfig(&goalarm.Config{
 		Year:  []int{2020, 2021, 2022},
 		Month: []int{2, 5, 7, 8, 11},
-		Day:   []int{1, 2, 3, 15, 20, 28},
-		Hour:  []int{10, 13, 17, 18, 21, 23},
+		Day:   []int{1, 2, 3, 4, 15, 20, 28},
+		Hour:  []int{9, 10, 13, 17, 18, 21, 23},
 		/*Minute: []int{10, 13, 17, 20, 28, 33, 37, 42, 46, 51, 56},*/
 		Second: []int{23, 33, 45, 57},
 	})
@@ -51,30 +51,18 @@ func main() {
 		Monitor: &monitor,
 	}
 
-	type Text struct {
-		Content string `json:"context"`
-	}
+	message1 := NewTextMessage("hello world", nil, nil)
+	action1 := NewRebot("https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx", message1)
 
-	type TextMessage struct {
-		Msgtype string `json:"msgtype"`
-		Text    Text   `json:"text"`
-	}
+	message2 := NewTextMessage("hello world", []string{"@all"}, nil)
+	action2 := NewRebot("https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx", message2)
 
-	message := TextMessage{
-		Msgtype: "text",
-		Text: Text{
-			Content: "hello world",
-		},
-	}
-
-	action := RebotAction{
-		webHook: "https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx",
-		data:    message,
-	}
-	actions := make([]Action, 0)
-	actions = append(actions, &action)
-
-	m.Actions = actions
+	message3 := NewMarkdownMessage(`#hello world
+**body**
+> haha
+` + "`code`")
+	action3 := NewRebot("https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=xxxxx", message3)
+	m.Actions = []Action{action1, action2, action3}
 
 	m.Start()
 }
