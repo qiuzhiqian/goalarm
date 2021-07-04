@@ -132,6 +132,12 @@ func NextTime(c Config) (time.Time, error) {
 			}
 
 			for _, k := range c.Day {
+				if k > 29 {
+					return now, fmt.Errorf("error time")
+				} else if k == 29 && !IsLeapYear(yearTag) {
+					continue
+				}
+
 				dayTag = k
 				if day < k {
 					//log.Println("day:", day, k)
@@ -198,4 +204,8 @@ func NextTime(c Config) (time.Time, error) {
 	}
 
 	return now, fmt.Errorf("xxxx")
+}
+
+func IsLeapYear(year int) bool {
+	return year%4 == 0 && (year%100 != 0 || year%400 == 0)
 }
